@@ -2,20 +2,14 @@
     (:require [re-frame.core :as re-frame]))
 
 (defn main-panel []
-  (let [name (re-frame/subscribe [:name])]
+  (let [columns (re-frame/subscribe [:columns])]
     (fn []
       [:div.kanban-board
-        [:div.kanban-column
-         [:header "Backlog"]
-         [:section.wrapper.ui-sortable
-          [:div.kanban-card {:draggable "true"} "a"]
-          [:div.kanban-card {:draggable "true"} "b"]]
-         [:footer "Add Card"]]
-        [:div.kanban-column
-         [:header "To Do"]
-         [:section.wrapper.ui-sortable]
-         [:footer "Add Card"]]
-        [:div.kanban-column
-         [:header "In Progress"]
-         [:section.wrapper.ui-sortable]
-         [:footer "Add Card"]]])))
+        (for [{title :title cards :cards} @columns]
+             [:div.kanban-column
+               {:key title}
+               [:header title]
+               [:section.wrapper.ui-sortable
+                 (for [{title :title} cards]
+                      [:div.kanban-card {:key title :draggable "true"} title])]
+               [:footer "Add Card"]])])))
