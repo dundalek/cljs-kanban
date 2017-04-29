@@ -112,4 +112,5 @@ itself"}])
                                           (monitor/props->cljscon)
                                           (aget "connect-drag-source"))]
               (connect-drag-source
-               (r/as-element child))))}))))]))
+                (r/create-element "div" #js{}
+                  (r/as-element child)))))}))))]))

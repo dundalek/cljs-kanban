@@ -19,7 +19,7 @@
 
 (def html5-backend
   (delay
-    (.-HTML5 js/ReactDnD)))
+    (.-default js/ReactDnDHTML5Backend)))
 
 (def get-empty-image
   (delay

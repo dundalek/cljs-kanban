@@ -28,7 +28,7 @@
 
 (defn monitor->cljsmon [monitor & {:keys [except]}]
   (reduce (fn [accu [key {:keys [method post-fn args]
-                         :or {post-fn identity}}]]
+                          :or {post-fn identity}}]]
             (let [res (post-fn
                           (util/safe-call monitor method args))]
               (if (nil? res)
@@ -59,4 +59,3 @@
 
 (defn props->cljscon [props]
   (:connect props))
-

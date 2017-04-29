@@ -38,7 +38,7 @@
     :description "function that indicates whether the item can be accepted by this drop zone"}])
 
 (defn options [{:keys [drop can-drop?]
-                            :or {drop (constantly nil)}}]
+                      :or {drop (constantly nil)}}]
   (let [options #js{}]
     (aset options "drop" (fn [props monitor]
                            (let [result (drop (monitor/monitor->cljsmon monitor))]
@@ -78,4 +78,5 @@
                                           (monitor/props->cljscon)
                                           (aget "connect-drop-target"))]
               (connect-drop-target
-               (r/as-element child))))}))))]))
+                (r/create-element "div" #js{}
+                  (r/as-element child)))))}))))]))
