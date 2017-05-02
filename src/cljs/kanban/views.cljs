@@ -20,6 +20,17 @@
    :state      drag-state
    :child [render-card card drag-state]])
 
+(defn create-card [column-id]
+ (let [text (r/atom "")
+       creating? (r/atom false)]
+   (fn [column-id]
+     (if @creating?
+      [:div
+       [:div.kanban-card [:textarea {:value @text :auto-focus true :on-change #(reset! text (-> % .-target .-value))}]]
+       [:div [:button {:on-click #(dispatch [:add-card {:column-id column-id :title @text}])} "Add"]
+             [:button {:on-click (fn [] (reset! creating? false) (reset! text ""))} "X"]]]
+      [:div {:on-click #(reset! creating? true)} "Add card"]))))
+
 (defn board []
   (let [columns (subscribe [:columns])
         cards (subscribe [:cards])
@@ -42,7 +53,7 @@
                    [:section.wrapper.ui-sortable
                      (for [card (column-cards column-id)]
                        [render-draggable-card card drag-state])]
-                   [:footer "Add Card"]]])]))))
+                   [:footer [create-card column-id]]]])]))))
 
 (defn main-panel []
   [(dnd/with-drag-drop-context
