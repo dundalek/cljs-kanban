@@ -8,6 +8,11 @@
    db/default-db))
 
 (reg-event-db
+  :import-db
+  (fn  [_ [_ data]]
+    data))
+
+(reg-event-db
   :move-card
   (fn [db [_ card-id column-id]]
     (let [cards (:cards db)
