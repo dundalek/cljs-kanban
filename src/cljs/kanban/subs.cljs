@@ -6,3 +6,8 @@
  :columns
  (fn [db]
    (:columns db)))
+
+(re-frame/reg-sub
+ :cards
+ (fn [db]
+   (:cards db)))
