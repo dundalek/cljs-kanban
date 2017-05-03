@@ -32,15 +32,25 @@
              [:button {:on-click (fn [] (reset! creating? false) (reset! text ""))} "X"]]]
       [:div {:on-click #(reset! creating? true)} "Add card"]))))
 
+(defn render-column [{title :title column-id :id} cards drag-state]
+  [:div.kanban-column
+    {:key column-id}
+    [:header title]
+    [:section.wrapper.ui-sortable
+      (for [card cards]
+        [render-draggable-card card drag-state])]
+    [:footer [create-card column-id]]])
+
 (defn board []
   (let [columns (subscribe [:columns])
         cards (subscribe [:cards])
         drag-state (r/atom {})
         drop-state (r/atom {})]
     (fn []
-      (let [column-cards (group-by :column-id @cards)]
+      (let [column-cards-idx (group-by :column-id @cards)]
         [:div.kanban-board
-          (for [{title :title column-id :id} @columns]
+          (for [{column-id :id :as column} @columns]
+            (let [column-cards (column-cards-idx column-id)]
               [dnd/drop-target
                :types [:card]
                :drop (fn [state]
@@ -48,13 +58,7 @@
                        {:id column-id})
                :state drop-state
                :child
-                 [:div.kanban-column
-                   {:key title}
-                   [:header title]
-                   [:section.wrapper.ui-sortable
-                     (for [card (column-cards column-id)]
-                       [render-draggable-card card drag-state])]
-                   [:footer [create-card column-id]]]])]))))
+                 [render-column column column-cards drag-state]]))]))))
 
 ; (defn main-panel []
 ;   [main])
