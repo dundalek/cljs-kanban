@@ -28,7 +28,7 @@
        :isOver (.isOver monitor)
        :canDrop (.canDrop monitor)})
 
-(defn dustbin [{can-drop :canDrop is-over :isOver, connect-drop-target :connectDropTarget}]
+(defn dustbin [{can-drop :canDrop is-over :isOver connect-drop-target :connectDropTarget}]
   (let [is-active (and can-drop is-over)
         bg-color (cond
                     is-active "darkgreen"
