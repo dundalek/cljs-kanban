@@ -3,6 +3,7 @@
               [re-frame.core :refer [subscribe dispatch]]
               [reagent.core :as r]
               [reagent-dnd.core :as dnd]))
+              ; [dnd-examples.example-sortable :refer [main]]))
 
 (defn render-card [{title :title card-id :id} drag-state]
   (let [dragging (= card-id (-> @drag-state :item :id))]
@@ -54,6 +55,9 @@
                      (for [card (column-cards column-id)]
                        [render-draggable-card card drag-state])]
                    [:footer [create-card column-id]]]])]))))
+
+; (defn main-panel []
+;   [main])
 
 (defn main-panel []
   [(dnd/with-drag-drop-context
