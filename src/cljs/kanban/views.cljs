@@ -1,8 +1,9 @@
 (ns kanban.views
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
-              [re-com.core :refer [button]]
-              [reagent.core :as r]))
+              [re-com.core :refer [button h-split]]
+              [reagent.core :as r]
+              [kanban.importer :as importer]))
               ; [dnd-examples.example-sortable :refer [main]]))
 
 (def card-source
@@ -104,6 +105,58 @@
             (let [column-cards (column-cards-idx column-id)]
                  ^{:key column-id} [droppable-column {:column column :cards column-cards :draggable-card draggable-card :move-card move-card}]))]))))
 
+(defn trello-import-form []
+  (let [text (r/atom "https://trello.com/b/TFWoOH5n.json")]
+    (fn []
+      [:div
+        "Go to Trello." [:br]
+        "Open the menu on the right." [:br]
+        "Select Other -> Export as JSON." [:br]
+        "Copy and paste the link into the input below."
+        [:input {:type "text"
+                 :class-name "form-control"
+                 :placeholder "Trello import URL"
+                 :auto-focus true
+                 :value @text
+                 :on-change #(reset! text (.-target.value %))}]
+        [button :label "Import"
+                :class "btn-primary"
+                :on-click #(importer/load-trello-data @text (fn [data] (dispatch [:import-db data])))]])))
+
+
+(defn github-import-form []
+  (let [text (r/atom "https://api.github.com/repos/tinytacoteam/zazu/issues?filter=is:issue%20is:open")]
+    (fn []
+      [:div
+        [:input {:type "text"
+                 :class-name "form-control"
+                 :placeholder "username/repo"
+                 :auto-focus true
+                 :value @text
+                 :on-change #(reset! text (.-target.value %))}]
+        [button :label "Import"
+                :class "btn-primary"
+                :on-click #(importer/load-github-issues-data @text (fn [data] (dispatch [:import-db data])))]])))
+
+(defn sidebar []
+  (let [active (r/atom nil)]
+    (fn []
+      [:div.kanban-column
+        (if @active
+          [:div
+            [button :label "< back"
+                    :class "btn-link"
+                    :on-click #(reset! active nil)]
+            (when (= @active :trello)
+              [trello-import-form])
+            (when (= @active :github)
+              [github-import-form])]
+          [:div
+            [button :label "Import Trello board"
+                    :on-click #(reset! active :trello)]
+            [button :label "Import Github issues"
+                    :on-click #(reset! active :github)]])])))
+
 (defn main-panel []
   (let [context-provider (r/adapt-react-class (.-DragDropContextProvider js/ReactDnD))
         drag-source (.-DragSource js/ReactDnD)
@@ -114,7 +167,13 @@
             ((drop-target "card" card-target card-target-collect) ((drag-source "card" card-source card-source-collect) (r/reactify-component render-card))))
         droppable-column (r/adapt-react-class ((drop-target "card" column-target column-collect) (r/reactify-component render-column)))]
     [context-provider {:backend backend}
-      [board card-item droppable-column]]))
+      [h-split
+        :panel-1 [board card-item droppable-column]
+        :panel-2 [:div.kanban-board
+                    [sidebar]]
+        :initial-split 70]]))
+
+
 
 ; (defn main-panel []
 ;   [main])
