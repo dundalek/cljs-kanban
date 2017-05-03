@@ -1,6 +1,7 @@
 (ns kanban.views
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
+              [re-com.core :refer [button]]
               [reagent.core :as r]))
               ; [dnd-examples.example-sortable :refer [main]]))
 
@@ -61,8 +62,8 @@
      (if @creating?
       [:div
        [:div.kanban-card [:textarea {:value @text :auto-focus true :on-change #(reset! text (-> % .-target .-value))}]]
-       [:div [:button {:on-click (fn [] (dispatch [:add-card {:column-id column-id :title @text}]) (reset))} "Add"]
-             [:button {:on-click reset} "X"]]]
+       [:div [button :label "Add" :class "btn-primary" :on-click (fn [] (dispatch [:add-card {:column-id column-id :title @text}]) (reset))]
+             [button :label "X" :class "btn-link" :on-click reset]]]
       [:div {:on-click #(reset! creating? true)} "Add card"]))))
 
 (def column-target
