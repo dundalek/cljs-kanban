@@ -8,11 +8,14 @@
 
   :plugins [[lein-cljsbuild "1.1.4"]
             [lein-less "1.7.5"]
-            [lein-kibit "0.1.3"]]
+            [lein-kibit "0.1.3"]
+            [jonase/eastwood "0.2.3"]
+            [venantius/yagni "0.1.4"]
+            [lein-bikeshed "0.4.1"]]
 
   :min-lein-version "2.5.3"
 
-  :source-paths ["src/clj"]
+  :source-paths ["src/clj" "src/cljs"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"
                                     "test/js"]
