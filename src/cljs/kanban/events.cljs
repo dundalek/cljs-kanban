@@ -26,6 +26,5 @@
   :add-card
   (fn [db [_ card]]
     (let [max-id (apply max (map :id (:cards db)))
-          new-id (if (nil? max-id) 1 (+ max-id 1))]
-      (assoc db :cards (conj (:cards db)
-                             (assoc card :id new-id))))))
+          new-id (if (nil? max-id) 1 (inc max-id))]
+      (update-in db [:cards] conj (assoc card :id new-id)))))

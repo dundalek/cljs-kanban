@@ -6,3 +6,5 @@ out
 
 node_modules
 resources/public/css/
+.lein-repl-history
+.nrepl-port

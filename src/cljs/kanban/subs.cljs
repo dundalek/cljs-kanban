@@ -4,8 +4,7 @@
 
 (re-frame/reg-sub
  :columns
- (fn [db]
-   (:columns db)))
+ :columns)
 
 (re-frame/reg-sub
  :cards

@@ -6,7 +6,8 @@
                  [cljs-ajax "0.5.9"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]
-            [lein-less "1.7.5"]]
+            [lein-less "1.7.5"]
+            [lein-kibit "0.1.3"]]
 
   :min-lein-version "2.5.3"
 
