@@ -1,8 +1,7 @@
 (ns kanban.views
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
-              [reagent.core :as r]
-              [reagent-dnd.core :as dnd]))
+              [reagent.core :as r]))
               ; [dnd-examples.example-sortable :refer [main]]))
 
 (def card-source
