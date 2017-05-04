@@ -2,7 +2,7 @@
     (:require [ajax.core :refer [GET POST]]))
 
 (defn map-trello-data [data]
-  (let [columns (map (fn [{id :id name :name}]
+  (let [columns (map (fn [{:keys [id name]}]
                        {:id id :title name})
                      (filter #(-> % :closed not) (:lists data)))
         cards (map (fn [{id :id name :name id-list :idList}]
@@ -18,7 +18,7 @@
         :handler #(handler (map-trello-data %))}))
 
 (defn map-github-issues-data [data]
-  (let [cards (map (fn [{id :id title :title labels :labels}]
+  (let [cards (map (fn [{:keys [id title labels]}]
                      {:id id :title title :column-id (-> labels first :name)})
                    data)
         columns (map-indexed (fn [idx item] {:id (inc idx) :title item}) (distinct (map :column-id cards)))
