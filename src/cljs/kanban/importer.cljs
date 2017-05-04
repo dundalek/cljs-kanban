@@ -32,3 +32,22 @@
     {:response-format :json
      :keywords? true
      :handler #(handler (map-github-issues-data %))}))
+
+(defn parse-markdown [src]
+  (let [md (js/Remarkable.)
+        tokens (.parse md src #js{})]
+    (js->clj tokens :keywordize-keys true)))
+
+(defn extract-headings [tokens]
+  (->> tokens
+    (drop-while #(not= (:type %) "heading_open"))
+    (partition-by #(= (:type %) "heading_open"))
+    (map first)
+    (partition 2)
+    (map (fn [[{level :hLevel}
+               {name :content}]]
+           {:level level :name name}))))
+
+(defn load-data []
+  (GET "/README.md"
+       :handler #(js/console.log "response" (extract-headings (parse-markdown %)))))

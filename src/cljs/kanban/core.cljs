@@ -4,7 +4,8 @@
               [kanban.events]
               [kanban.subs]
               [kanban.views :as views]
-              [kanban.config :as config]))
+              [kanban.config :as config]
+              [kanban.importer]))
 
 (defn dev-setup []
   (when config/debug?
@@ -19,5 +20,5 @@
 (defn ^:export init []
   (re-frame/dispatch-sync [:initialize-db])
   (dev-setup)
-  ; (load-github-issues-data)
+  (kanban.importer/load-data)
   (mount-root))
