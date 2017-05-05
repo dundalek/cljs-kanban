@@ -48,6 +48,23 @@
                {name :content}]]
            {:level level :name name}))))
 
+(defn add-child [node child]
+  (update-in node [:children] #(conj (vec %1) %2) child))
+
+(defn make-tree
+  ([coll] (let [root (first (make-tree {:level 0 :name "root" :children []} coll))]
+             (if (= (count (:children root)) 1)
+               (first (:children root))
+               root)))
+  ([node coll] (let [[x & xs] coll
+                     diff (- (:level x) (:level node) 1)]
+                 (if (< diff 0)
+                     [node coll]
+                     (let [[child more] (if (= diff 0)
+                                          (make-tree x xs)
+                                          (make-tree {:level (inc (:level node)) :name ""} coll))]
+                       (make-tree (add-child node child) more))))))
+
 (defn load-data []
   (GET "/README.md"
-       :handler #(js/console.log "response" (extract-headings (parse-markdown %)))))
+       :handler #(js/console.log "response" (make-tree (extract-headings (parse-markdown %))))))
