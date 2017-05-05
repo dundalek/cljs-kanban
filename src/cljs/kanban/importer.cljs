@@ -52,9 +52,10 @@
   (update-in node [:children] #(conj (vec %1) %2) child))
 
 (defn make-tree
-  ([coll] (let [root (first (make-tree {:level 0 :name "root" :children []} coll))]
-             (if (= (count (:children root)) 1)
-               (first (:children root))
+  ([coll] (let [root (first (make-tree {:level 0 :name "root" :children []} coll))
+                children (:children root)]
+             (if (= (count children) 1)
+               (first children)
                root)))
   ([node coll] (let [[x & xs] coll
                      diff (- (:level x) (:level node) 1)]
@@ -65,6 +66,25 @@
                                           (make-tree {:level (inc (:level node)) :name ""} coll))]
                        (make-tree (add-child node child) more))))))
 
-(defn load-data []
-  (GET "/README.md"
-       :handler #(js/console.log "response" (make-tree (extract-headings (parse-markdown %))))))
+(defn map-markdown-tree [data]
+  {:columns (into [] (map-indexed
+                      (fn [idx {name :name}]
+                        {:id (inc idx) :title name})
+                      (:children data)))
+   :cards (into [] (apply concat
+                     (map-indexed
+                        (fn [column-idx {children :children}]
+                            (let [column-id (inc column-idx)]
+                              (map-indexed (fn [idx {name :name}]
+                                              {:id (inc idx) :title name :column-id column-id})
+                                           children)))
+                        (:children data))))})
+
+(defn load-markdown-data [url handler]
+  (GET url
+     :handler (comp
+                 handler
+                 map-markdown-tree
+                 make-tree
+                 extract-headings
+                 parse-markdown)))

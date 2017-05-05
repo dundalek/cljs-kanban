@@ -138,6 +138,20 @@
                 :class "btn-primary"
                 :on-click #(importer/load-github-issues-data @text (fn [data] (dispatch [:import-db data])))]])))
 
+(defn markdown-import-form []
+  (let [text (r/atom "/data/example-todo.md")]
+    (fn []
+      [:div
+        [:input {:type "text"
+                 :class-name "form-control"
+                 :placeholder "URL"
+                 :auto-focus true
+                 :value @text
+                 :on-change #(reset! text (.-target.value %))}]
+        [button :label "Import"
+                :class "btn-primary"
+                :on-click #(importer/load-markdown-data @text (fn [data] (dispatch [:import-db data])))]])))
+
 (defn sidebar []
   (let [active (r/atom nil)]
     (fn []
@@ -147,15 +161,17 @@
             [button :label "< back"
                     :class "btn-link"
                     :on-click #(reset! active nil)]
-            (when (= @active :trello)
-              [trello-import-form])
-            (when (= @active :github)
-              [github-import-form])]
+            (case @active
+                :trello [trello-import-form]
+                :github [github-import-form]
+                :markdown [markdown-import-form])]
           [:div
             [button :label "Import Trello board"
                     :on-click #(reset! active :trello)]
             [button :label "Import Github issues"
-                    :on-click #(reset! active :github)]])])))
+                    :on-click #(reset! active :github)]
+            [button :label "Import Markdown"
+                    :on-click #(reset! active :markdown)]])])))
 
 (defn main-panel []
   (let [context-provider (r/adapt-react-class (.-DragDropContextProvider js/ReactDnD))

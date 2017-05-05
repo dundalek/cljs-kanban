@@ -20,5 +20,4 @@
 (defn ^:export init []
   (re-frame/dispatch-sync [:initialize-db])
   (dev-setup)
-  (kanban.importer/load-data)
   (mount-root))
