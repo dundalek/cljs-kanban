@@ -1,5 +1,5 @@
 (ns kanban.core-test
-  (:require [cljs.test :refer-macros [deftest testing is]]
+  (:require [cljs.test :refer-macros [deftest testing is are]]
             [kanban.core :as core]
             [kanban.importer :refer [make-tree]]))
 
@@ -41,6 +41,7 @@
 
 (deftest fake-test
   (testing "fake description"
-    (is (= (make-tree headings1) tree1))
-    (is (= (make-tree headings2) tree2))
-    (is (= (make-tree headings3) tree3))))
+    (are [headings tree] (= (make-tree headings) tree)
+      headings1 tree1
+      headings2 tree2
+      headings3 tree3)))
