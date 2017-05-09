@@ -89,6 +89,9 @@ body,
 .kanban-board .kanban-card:hover {
   background: #edeff0;
 }
+.is-dragging .kanban-board .kanban-card:hover {
+  background: #fff;
+}
 .kanban-board .kanban-card.ui-sortable-helper {
   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.5);
   transform: rotate(5deg);

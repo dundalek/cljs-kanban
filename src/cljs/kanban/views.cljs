@@ -9,9 +9,11 @@
 
 (def card-source
   #js {:beginDrag (fn [props]
+                      (.add js/document.body.classList "is-dragging")
                       #js {:id (.-card.id props)
                            :index (.-card.index props)})
        :endDrag (fn [props monitor]
+                    (.remove js/document.body.classList "is-dragging")
                     (let [item (.getItem monitor)
                           drop-result (.getDropResult monitor)]
                          (when (not (nil? drop-result))
