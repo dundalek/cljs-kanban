@@ -1,10 +1,11 @@
 (ns kanban.views
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
+              [re-frame.db :refer [app-db]]
               [re-com.core :refer [button h-split]]
               [reagent.core :as r]
-              [kanban.importer :as importer]))
-              ; [dnd-examples.example-sortable :refer [main]]))
+              [kanban.importer :as importer]
+              [kanban.exporter :as exporter]))
 
 (def card-source
   #js {:beginDrag (fn [props]
@@ -171,7 +172,13 @@
             [button :label "Import Github issues"
                     :on-click #(reset! active :github)]
             [button :label "Import Markdown"
-                    :on-click #(reset! active :markdown)]])])))
+                    :on-click #(reset! active :markdown)]
+            [:br]
+            [:br]
+            [button :label "Export as JSON"
+                    :on-click #(exporter/download "board.json" (exporter/export-json @app-db))]
+            [button :label "Export as Markdown"
+                    :on-click #(exporter/download "board.md" (exporter/export-markdown @app-db))]])])))
 
 (defn main-panel []
   (let [context-provider (r/adapt-react-class (.-DragDropContextProvider js/ReactDnD))
@@ -188,8 +195,3 @@
         :panel-2 [:div.kanban-board
                     [sidebar]]
         :initial-split 70]]))
-
-
-
-; (defn main-panel []
-;   [main])
