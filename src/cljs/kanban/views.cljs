@@ -69,7 +69,11 @@
       [:div.create-card-link {:on-click #(reset! creating? true)} "Add a card"]))))
 
 (def column-target
-  #js {:drop (fn [props] #js{:id (.-column.id props)})})
+  #js {:drop (fn [props] #js{:id (.-column.id props)})
+       :hover
+         (fn [props monitor component]
+           (when (and (nil? (.-cards props)))
+            (dispatch [:move-card (-> monitor .getItem .-id) (.-column.id props)])))})
 
 (defn column-collect [connect monitor]
   #js {:connectDropTarget (.dropTarget connect)
