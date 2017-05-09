@@ -62,11 +62,11 @@
        reset (fn [] (reset! creating? false) (reset! text ""))]
    (fn [column-id]
      (if @creating?
-      [:div
+      [:div.create-card
        [:div.kanban-card [:textarea {:value @text :auto-focus true :on-change #(reset! text (-> % .-target .-value))}]]
        [:div [button :label "Add" :class "btn-primary" :on-click (fn [] (dispatch [:add-card {:column-id column-id :title @text}]) (reset))]
              [button :label "X" :class "btn-link" :on-click reset]]]
-      [:div {:on-click #(reset! creating? true)} "Add card"]))))
+      [:div.create-card-link {:on-click #(reset! creating? true)} "Add a card"]))))
 
 (def column-target
   #js {:drop (fn [props] #js{:id (.-column.id props)})})
@@ -85,13 +85,12 @@
         column-id (.-id column)]
     (connect-drop-target
       (r/as-element
-        [:div
           [:div.kanban-column
             [:header title]
             [:section.wrapper.ui-sortable
               (for [card cards]
                 ^{:key (.-id card)} [draggable-card {:card card :move-card move-card}])]
-            [:footer [create-card column-id]]]]))))
+            [:footer [create-card column-id]]]))))
 
 (defn board [draggable-card droppable-column]
   (let [columns (subscribe [:columns])
@@ -156,7 +155,7 @@
 (defn sidebar []
   (let [active (r/atom nil)]
     (fn []
-      [:div.kanban-column
+      [:div.sidebar
         (if @active
           [:div
             [button :label "< back"
@@ -190,8 +189,6 @@
             ((drop-target "card" card-target card-target-collect) ((drag-source "card" card-source card-source-collect) (r/reactify-component render-card))))
         droppable-column (r/adapt-react-class ((drop-target "card" column-target column-collect) (r/reactify-component render-column)))]
     [context-provider {:backend backend}
-      [h-split
-        :panel-1 [board card-item droppable-column]
-        :panel-2 [:div.kanban-board
-                    [sidebar]]
-        :initial-split 70]]))
+      [:div.app-container
+        [board card-item droppable-column]
+        [sidebar]]]))
