@@ -2,7 +2,7 @@
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
               [re-frame.db :refer [app-db]]
-              [re-com.core :refer [button h-split]]
+              [re-com.core :refer [button throbber]]
               [reagent.core :as r]
               [kanban.importer :as importer]
               [kanban.exporter :as exporter]))
@@ -111,79 +111,92 @@
             (let [column-cards (column-cards-idx column-id)]
                  ^{:key column-id} [droppable-column {:column column :cards column-cards :draggable-card draggable-card :move-card move-card}]))]))))
 
-(defn trello-import-form []
-  (let [text (r/atom "https://trello.com/b/TFWoOH5n.json")]
+(def import-services
+ {:trello
+   {:label "Import Trello board"
+    :placeholder "Trello import URL"
+    :default-value "https://trello.com/b/TFWoOH5n.json"
+    :info [:div
+            [:br]
+            [:h4 "Import from Trello"]
+            [:ul
+              [:li "Go to your Trello board."]
+              [:li "Open the menu on the right."]
+              [:li "Select Other -> Export as JSON."]
+              [:li "Copy and paste the link below."]]]
+    :import-fn importer/load-trello-data}
+  :github
+    {:label "Import Github issues"
+     :placeholder "username/repo"
+     :default-value "https://api.github.com/repos/tinytacoteam/zazu/issues?filter=is:issue%20is:open"
+     :info [:div
+             [:br]
+             [:h4 "Import from Github"]]
+     :import-fn importer/load-github-issues-data}
+  :markdown
+    {:label "Import Markdown"
+     :placeholder "URL"
+     :default-value "/data/example-todo.md"
+     :info [:div
+             [:br]
+             [:h4 "Import Markdown"]]
+     :import-fn importer/load-markdown-data}})
+
+(defn import-form [{:keys [info import-fn placeholder default-value]} on-cancel]
+  (let [text (r/atom default-value)
+        loading (r/atom false)]
     (fn []
       [:div
-        "Go to Trello." [:br]
-        "Open the menu on the right." [:br]
-        "Select Other -> Export as JSON." [:br]
-        "Copy and paste the link into the input below."
-        [:input {:type "text"
-                 :class-name "form-control"
-                 :placeholder "Trello import URL"
-                 :auto-focus true
-                 :value @text
-                 :on-change #(reset! text (.-target.value %))}]
-        [button :label "Import"
-                :class "btn-primary"
-                :on-click #(importer/load-trello-data @text (fn [data] (dispatch [:import-db data])))]])))
-
-
-(defn github-import-form []
-  (let [text (r/atom "https://api.github.com/repos/tinytacoteam/zazu/issues?filter=is:issue%20is:open")]
-    (fn []
-      [:div
-        [:input {:type "text"
-                 :class-name "form-control"
-                 :placeholder "username/repo"
-                 :auto-focus true
-                 :value @text
-                 :on-change #(reset! text (.-target.value %))}]
-        [button :label "Import"
-                :class "btn-primary"
-                :on-click #(importer/load-github-issues-data @text (fn [data] (dispatch [:import-db data])))]])))
-
-(defn markdown-import-form []
-  (let [text (r/atom "/data/example-todo.md")]
-    (fn []
-      [:div
-        [:input {:type "text"
-                 :class-name "form-control"
-                 :placeholder "URL"
-                 :auto-focus true
-                 :value @text
-                 :on-change #(reset! text (.-target.value %))}]
-        [button :label "Import"
-                :class "btn-primary"
-                :on-click #(importer/load-markdown-data @text (fn [data] (dispatch [:import-db data])))]])))
+        info
+        [:form {:on-submit
+                  (fn [ev]
+                    (.preventDefault ev)
+                    (reset! loading true)
+                    (import-fn @text
+                      (fn [data]
+                        (on-cancel)
+                        (dispatch [:import-db data]))))}
+          [:input {:type "text"
+                   :class-name "form-control"
+                   :placeholder placeholder
+                   :auto-focus true
+                   :value @text
+                   :on-change #(reset! text (.-target.value %))
+                   :disabled @loading}]
+          [:div.btn-group
+            [button :label "Cancel" :on-click (fn [ev] (.preventDefault ev) (on-cancel))]
+            [button :label [:span
+                              "Import"
+                              (when @loading [throbber :size :small :color "#fff" :style {:margin "0 0 0 10px"}])]
+                    :class "btn-primary"
+                    :attr {:type "submit"
+                           :disabled @loading}]]]])))
 
 (defn sidebar []
-  (let [active (r/atom nil)]
+  (let [active (r/atom nil)
+        cancel #(reset! active nil)]
     (fn []
       [:div.sidebar
+        [:h2 "Kanban Demo"]
         (if @active
+          [import-form (@active import-services) cancel]
           [:div
-            [button :label "< back"
-                    :class "btn-link"
-                    :on-click #(reset! active nil)]
-            (case @active
-                :trello [trello-import-form]
-                :github [github-import-form]
-                :markdown [markdown-import-form])]
-          [:div
-            [button :label "Import Trello board"
-                    :on-click #(reset! active :trello)]
-            [button :label "Import Github issues"
-                    :on-click #(reset! active :github)]
-            [button :label "Import Markdown"
-                    :on-click #(reset! active :markdown)]
+            [:p "A sample project featuring Drag and Drop using " [:a {:href "https://react-dnd.github.io/react-dnd/"} "react-dnd"] " written in ClojureScript."]
+            [:p "Check out the " [:a {:href "https://github.com/dundalek/cljs-kanban"} "source code"] " on Github."]
             [:br]
+            [:h4 "Import data"]
+            (for [[key {label :label}] (seq import-services)]
+              ^{:key key} [:div
+                            [button :label label
+                                    :on-click #(reset! active key)]])
             [:br]
-            [button :label "Export as JSON"
-                    :on-click #(exporter/download "board.json" (exporter/export-json @app-db))]
-            [button :label "Export as Markdown"
-                    :on-click #(exporter/download "board.md" (exporter/export-markdown @app-db))]])])))
+            [:h4 "Export data"]
+            [:div
+              [button :label "Export as JSON"
+                      :on-click #(exporter/download "board.json" (exporter/export-json @app-db))]]
+            [:div
+              [button :label "Export as Markdown"
+                      :on-click #(exporter/download "board.md" (exporter/export-markdown @app-db))]]])])))
 
 (defn main-panel []
   (let [context-provider (r/adapt-react-class (.-DragDropContextProvider js/ReactDnD))

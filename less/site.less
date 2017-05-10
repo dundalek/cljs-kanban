@@ -121,9 +121,32 @@ html, body, #app {
 
 .sidebar {
   background: #e2e4e6;
-  min-width: 250px;
-  max-width: 250px;
+  min-width: 300px;
+  max-width: 300px;
   height: 100%;
   padding: 10pt;
   box-shadow: 0 0 6px rgba(0,0,0,0.4);
+
+  & ul {
+    margin-left: 20px;
+  }
+
+	& .btn {
+		margin: 5px 0;
+	}
+
+
+	& .btn-group {
+		display: block;
+		text-align: center;
+
+    & .btn {
+      margin: 10px 5px;
+
+      & span .rc-box {
+        // loader inside button
+        display: inline-block;
+      }
+    }
+	}
 }
