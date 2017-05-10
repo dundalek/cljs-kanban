@@ -11,7 +11,8 @@
             [lein-kibit "0.1.3"]
             [jonase/eastwood "0.2.3"]
             [venantius/yagni "0.1.4"]
-            [lein-bikeshed "0.4.1"]]
+            [lein-bikeshed "0.4.1"]
+            [lein-pdo "0.1.1"]]
 
   :min-lein-version "2.5.3"
 
@@ -32,6 +33,12 @@
     :plugins      [[lein-figwheel "0.5.9"]
                    [lein-doo "0.1.7"]]}}
 
+  :aliases {"dev" ["do" "clean"
+                        ["pdo" ["figwheel" "dev"]
+                               ["less" "auto"]]]
+            "build" ["do" "clean"
+                          ["cljsbuild" "once" "min"]
+                          ["less" "once"]]}
 
   :cljsbuild
   {:builds

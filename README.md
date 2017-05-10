@@ -4,25 +4,10 @@ A [re-frame](https://github.com/Day8/re-frame) application designed to ... well,
 
 ## Development Mode
 
-### Compile css:
-
-Compile css file once.
-
-```
-lein less once
-```
-
-Automatically recompile css file on change.
-
-```
-lein less auto
-```
-
 ### Run application:
 
 ```
-lein clean
-lein figwheel dev
+lein dev
 ```
 
 Figwheel will automatically push cljs changes to the browser.
@@ -44,6 +29,5 @@ The above command assumes that you have [phantomjs](https://www.npmjs.com/packag
 To compile clojurescript to javascript:
 
 ```
-lein clean
-lein cljsbuild once min
+lein build
 ```
