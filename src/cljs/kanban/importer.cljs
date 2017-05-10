@@ -1,6 +1,10 @@
 (ns kanban.importer
     (:require [ajax.core :refer [GET POST]]))
 
+(defn handle-error [cb]
+   (fn [{:keys [status status-text]}]
+      (cb (str "Error " status " - " status-text))))
+
 (defn map-trello-data [data]
   (let [columns (map (fn [{:keys [id name]}]
                        {:id id :title name})
@@ -15,7 +19,8 @@
   (GET url
        {:response-format :json
         :keywords? true
-        :handler #(handler (map-trello-data %))}))
+        :handler #(handler nil (map-trello-data %))
+        :error-handler (handle-error handler)}))
 
 (defn build-github-url [id]
   (str "https://api.github.com/repos/" id "/issues?filter=is:issue%20is:open"))
@@ -41,7 +46,8 @@
   (GET (handle-github-url url)
     {:response-format :json
      :keywords? true
-     :handler #(handler (map-github-issues-data %))}))
+     :handler #(handler nil (map-github-issues-data %))
+     :error-handler (handle-error handler)}))
 
 (defn parse-markdown [src]
   (let [md (js/Remarkable.)
@@ -93,8 +99,9 @@
 (defn load-markdown-data [url handler]
   (GET url
      :handler (comp
-                 handler
+                 (partial handler nil)
                  map-markdown-tree
                  make-tree
                  extract-headings
-                 parse-markdown)))
+                 parse-markdown)
+     :error-handler (handle-error handler)))

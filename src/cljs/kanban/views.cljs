@@ -2,7 +2,7 @@
     (:require [clojure.string :as str]
               [re-frame.core :refer [subscribe dispatch]]
               [re-frame.db :refer [app-db]]
-              [re-com.core :refer [button throbber]]
+              [re-com.core :refer [button throbber alert-box]]
               [reagent.core :as r]
               [kanban.importer :as importer]
               [kanban.exporter :as exporter]))
@@ -144,25 +144,36 @@
 
 (defn import-form [{:keys [info import-fn placeholder default-value]} on-cancel]
   (let [text (r/atom default-value)
-        loading (r/atom false)]
+        loading (r/atom false)
+        error (r/atom nil)]
     (fn []
       [:div
         info
         [:form {:on-submit
                   (fn [ev]
                     (.preventDefault ev)
+                    (reset! error nil)
                     (reset! loading true)
                     (import-fn @text
-                      (fn [data]
-                        (on-cancel)
-                        (dispatch [:import-db data]))))}
-          [:input {:type "text"
-                   :class-name "form-control"
-                   :placeholder placeholder
-                   :auto-focus true
-                   :value @text
-                   :on-change #(reset! text (.-target.value %))
-                   :disabled @loading}]
+                      (fn [err data]
+                        (if err
+                          (do
+                            (reset! error err)
+                            (reset! loading false))
+                          (do
+                            (on-cancel)
+                            (dispatch [:import-db data]))))))}
+          [:div.form-group
+            {:class (when @error "has-error")}
+            [:input {:type "text"
+                     :class-name "form-control"
+                     :placeholder placeholder
+                     :auto-focus true
+                     :value @text
+                     :on-change #(reset! text (.-target.value %))
+                     :disabled @loading}]]
+          (when @error
+            [alert-box :alert-type :danger :body @error])
           [:div.btn-group
             [button :label "Cancel" :on-click (fn [ev] (.preventDefault ev) (on-cancel))]
             [button :label [:span
