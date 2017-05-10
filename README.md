@@ -1,6 +1,6 @@
 # kanban
 
-A [re-frame](https://github.com/Day8/re-frame) application designed to ... well, that part is up to you.
+A demo project showing usage of Drag and Drop written in ClojureScript using [re-frame](https://github.com/Day8/re-frame) and [react-dnd](http://react-dnd.github.io/react-dnd/).
 
 ## Development Mode
 
