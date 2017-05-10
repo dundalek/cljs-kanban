@@ -5,6 +5,8 @@
 out
 
 node_modules
+tmp
+/resources/public/css/site.css
 .lein-repl-history
 .lein-failures
 .nrepl-port
