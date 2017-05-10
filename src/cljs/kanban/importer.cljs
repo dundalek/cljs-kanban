@@ -17,6 +17,16 @@
         :keywords? true
         :handler #(handler (map-trello-data %))}))
 
+(defn build-github-url [id]
+  (str "https://api.github.com/repos/" id "/issues?filter=is:issue%20is:open"))
+
+(defn handle-github-url [url]
+  (condp re-matches url
+    #"^[a-z]+/[a-z]+$" :>> build-github-url
+    #"^https?://github.com/([a-z]+/[a-z]+)$" :>> (fn [[_ match]] (build-github-url match))
+    #"^https?://api.github.com/.*" :>> identity
+    #".*" :>> (constantly "")))
+
 (defn map-github-issues-data [data]
   (let [cards (map (fn [{:keys [id title labels]}]
                      {:id id :title title :column-id (-> labels first :name)})
@@ -28,7 +38,7 @@
         :cards (vec cards-mapped)}))
 
 (defn load-github-issues-data [url handler]
-  (GET url
+  (GET (handle-github-url url)
     {:response-format :json
      :keywords? true
      :handler #(handler (map-github-issues-data %))}))
