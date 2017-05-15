@@ -213,7 +213,7 @@
   (let [context-provider (r/adapt-react-class (.-DragDropContextProvider js/ReactDnD))
         drag-source (.-DragSource js/ReactDnD)
         drop-target (.-DropTarget js/ReactDnD)
-        backend (.-default js/ReactDnDHTML5Backend)
+        backend (aget js/ReactDnDHTML5Backend "default")
         card-item
           (r/adapt-react-class
             ((drop-target "card" card-target card-target-collect) ((drag-source "card" card-source card-source-collect) (r/reactify-component render-card))))
