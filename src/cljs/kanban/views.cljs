@@ -65,7 +65,7 @@
    (fn [column-id]
      (if @creating?
       [:div.create-card
-       [:div.kanban-card [:textarea {:value @text :auto-focus true :on-change #(reset! text (-> % .-target .-value))}]]
+       [:textarea {:value @text :auto-focus true :on-change #(reset! text (-> % .-target .-value))}]
        [:div [button :label "Add" :class "btn-primary" :on-click (fn [] (dispatch [:add-card {:column-id column-id :title @text}]) (reset))]
              [button :label "X" :class "btn-link" :on-click reset]]]
       [:div.create-card-link {:on-click #(reset! creating? true)} "Add a card"]))))
