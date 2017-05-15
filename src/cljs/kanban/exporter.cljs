@@ -1,8 +1,10 @@
 (ns kanban.exporter
   (:require [clojure.string :as s]))
 
-(defn export-json [data]
-  (js/JSON.stringify (clj->js data)))
+(defn export-json [{:keys [columns cards]}]
+  (js/JSON.stringify
+    (clj->js {:cards (map (fn [{:keys [id title column-id]}] {:id id :name title :idList column-id}) cards)
+              :lists (map (fn [{:keys [id title]}] {:id id :name title}) columns)})))
 
 (defn export-markdown [{:keys [columns cards]}]
   (let [column-cards (group-by :column-id cards)]
