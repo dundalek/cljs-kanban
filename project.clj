@@ -4,7 +4,8 @@
                  [reagent "0.6.0"]
                  [re-frame "0.9.2"]
                  [re-com "2.0.0"]
-                 [cljs-ajax "0.5.9"]]
+                 [cljs-ajax "0.5.9"]
+                 [datascript "0.16.2"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]
             [lein-less "1.7.5"]

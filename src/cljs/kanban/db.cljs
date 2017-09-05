@@ -1,18 +1,19 @@
 (ns kanban.db)
 
-(def default-db
-  {:columns [{:id 1 :title "Backlog"}
-             {:id 2 :title "To Do"}
-             {:id 3 :title "In Progress"}
-             {:id 4 :title "Done"}]
-   :cards
-    (vec
-      (concat
-        [{:id 1 :title "a" :column-id 1}
-         {:id 2 :title "b" :column-id 1}
-         {:id 6 :title "f" :column-id 1}
-         {:id 7 :title "g" :column-id 1}
-         {:id 3 :title "c" :column-id 2}
-         {:id 4 :title "d" :column-id 2}
-         {:id 5 :title "e" :column-id 3}]))})
-        ;(map (fn [id] {:id id :title (str "card-" id) :column-id 1}) (range 10 30))))})
+(def schema {:column {:db/valueType :db.type/ref
+                      :db/cardinality :db.cardinality/many}})
+
+(def data
+  (->> [{:db/id -1 :column/title "Backlog X"}
+        {:db/id -2 :column/title "To Do"}
+        {:db/id -3 :column/title "In Progress"}
+        {:db/id -4 :column/title "Done"}
+        {:db/id -11 :card/title "a" :column -1}
+        {:db/id -12 :card/title "b" :column -1}
+        {:db/id -16 :card/title "f" :column -1}
+        {:db/id -17 :card/title "g" :column -1}
+        {:db/id -13 :card/title "c" :column -2}
+        {:db/id -14 :card/title "d" :column -2}
+        {:db/id -15 :card/title "e" :column -3}]
+    (map-indexed (fn [idx item]
+                   (assoc item :order (* idx 100))))))

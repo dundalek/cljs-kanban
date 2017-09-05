@@ -100,16 +100,16 @@
 
 (defn board [draggable-card droppable-column]
   (let [columns (subscribe [:columns])
-        cards (subscribe [:cards])
         move-card (fn [column-id drag-index hover-index]
                     (dispatch [:move-card-x column-id drag-index hover-index]))]
     (fn []
-      (let [cards-indexed (vec (map-indexed (fn [idx item] (assoc item :index idx)) @cards))
-            column-cards-idx (group-by :column-id cards-indexed)]
-        [:div.kanban-board
-          (for [{column-id :id :as column} @columns]
-            (let [column-cards (column-cards-idx column-id)]
-                 ^{:key column-id} [droppable-column {:column column :cards column-cards :draggable-card draggable-card :move-card move-card}]))]))))
+      [:div.kanban-board
+        (for [{column-id :db/id title :column/title column-cards :cards} @columns]
+          (let [column {:id column-id :title title}
+                cards (map (fn [{card-id :db/id card-title :card/title card-column-id :column}]
+                              {:id card-id :title card-title :column-id card-column-id})
+                        column-cards)]
+            ^{:key column-id} [droppable-column {:column column :cards cards :draggable-card draggable-card :move-card move-card}]))])))
 
 (def import-services
  {:trello
@@ -126,21 +126,21 @@
               [:li "Copy and paste the link below."]]]
     :import-fn importer/load-trello-data}
   :github
-    {:label "Import Github issues"
-     :placeholder "username/repo"
-     :default-value "https://api.github.com/repos/tinytacoteam/zazu/issues?filter=is:issue%20is:open"
-     :info [:div
-             [:br]
-             [:h4 "Import from Github"]]
-     :import-fn importer/load-github-issues-data}
+   {:label "Import Github issues"
+    :placeholder "username/repo"
+    :default-value "https://api.github.com/repos/tinytacoteam/zazu/issues?filter=is:issue%20is:open"
+    :info [:div
+            [:br]
+            [:h4 "Import from Github"]]
+    :import-fn importer/load-github-issues-data}
   :markdown
-    {:label "Import Markdown"
-     :placeholder "URL"
-     :default-value "/data/example-todo.md"
-     :info [:div
-             [:br]
-             [:h4 "Import Markdown"]]
-     :import-fn importer/load-markdown-data}})
+   {:label "Import Markdown"
+    :placeholder "URL"
+    :default-value "/data/example-todo.md"
+    :info [:div
+            [:br]
+            [:h4 "Import Markdown"]]
+    :import-fn importer/load-markdown-data}})
 
 (defn import-form [{:keys [info import-fn placeholder default-value]} on-cancel]
   (let [text (r/atom default-value)
