@@ -10,8 +10,7 @@
 (def card-source
   #js {:beginDrag (fn [props]
                       (.add js/document.body.classList "is-dragging")
-                      #js {:id (.-card.id props)
-                           :index (.-card.index props)})
+                      #js {:id (.-card.id props)})
        :endDrag (fn [props monitor]
                     (.remove js/document.body.classList "is-dragging")
                     (let [item (.getItem monitor)
@@ -22,19 +21,16 @@
 (def card-target
   #js {:hover
         (fn [props monitor component]
-           (let [drag-index (-> monitor .getItem .-index)
-                 hover-index (.-card.index props)
-                 hover-column (aget props "card" "column-id")]
-              (when (not= drag-index hover-index)
+           (let [drag-id (-> monitor .getItem .-id)
+                 hover-id (.-card.id props)
+                 hover-column (aget props "card" "column-id" 0 "id")]
+              (when (not= drag-id hover-id)
                  (let [hoverBoundingRect (-> component js/ReactDOM.findDOMNode .getBoundingClientRect)
                        hoverMiddleY (/ (- (.-bottom hoverBoundingRect) (.-top hoverBoundingRect)) 2)
                        clientOffset (.getClientOffset monitor)
-                       hoverClientY (- (.-y clientOffset) (.-top hoverBoundingRect.top))]
-                    (when (not (or
-                                 (and (< drag-index hover-index) (< hoverClientY hoverMiddleY))
-                                 (and (> drag-index hover-index) (> hoverClientY hoverMiddleY))))
-                      (.moveCard props hover-column drag-index hover-index)
-                      (set! (.-index (.getItem monitor)) hover-index))))))})
+                       hoverClientY (- (.-y clientOffset) (.-top hoverBoundingRect))
+                       direction (if (< hoverClientY hoverMiddleY) :above :below)]
+                    (.moveCard props hover-column drag-id hover-id direction)))))})
 
 (defn card-source-collect [connect monitor]
   #js {:connectDragSource (.dragSource connect)
@@ -100,8 +96,8 @@
 
 (defn board [draggable-card droppable-column]
   (let [columns (subscribe [:columns])
-        move-card (fn [column-id drag-index hover-index]
-                    (dispatch [:move-card-x column-id drag-index hover-index]))]
+        move-card (fn [column-id drag-index hover-index direction]
+                    (dispatch [:move-card-x column-id drag-index hover-index direction]))]
     (fn []
       [:div.kanban-board
         (for [{column-id :db/id title :column/title column-cards :cards} @columns]

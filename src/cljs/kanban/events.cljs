@@ -3,43 +3,40 @@
               [datascript.core :as d]
               [kanban.db :as db]))
 
-(defn get-prev-card [db card]
+(defn get-prev-card-order [db card active-card]
   (->>
-    (d/q '[:find ?card-prev ?card-prev-order
-           :in $ ?card
+    (d/q '[:find ?card-prev-order
+           :in $ ?card ?active-card
            :where [?card :column ?column]
                   [?card :order ?order]
                   [?card-prev :column ?column]
                   [?card-prev :order ?card-prev-order]
+                  [(not= ?card-prev ?active-card)]
                   [(< ?card-prev-order ?order)]]
          db
-         card)
-    (sort-by second)
+         card
+         active-card)
+    (map first)
+    (sort)
     (reverse)
-    (first)
     (first)))
 
-(defn get-next-card [db card]
+(defn get-next-card-order [db card active-card]
   (->>
-    (d/q '[:find ?card-prev ?card-prev-order
-           :in $ ?card
+    (d/q '[:find ?card-prev-order
+           :in $ ?card ?active-card
            :where [?card :column ?column]
                   [?card :order ?order]
                   [?card-prev :column ?column]
                   [?card-prev :order ?card-prev-order]
+                  [(not= ?card-prev ?active-card)]
                   [(> ?card-prev-order ?order)]]
          db
-         card)
-    (sort-by second)
-    (first)
+         card
+         active-card)
+    (map first)
+    (sort)
     (first)))
-
-(defn get-card-column [db card]
-  (d/q '[:find ?column .
-         :in $ ?card
-         :where [?card :column ?column]]
-     conn
-     card))
 
 (reg-event-db
  :initialize-db
@@ -58,7 +55,7 @@
   :move-card
   (fn [db [_ card-id column-id]]
     (let [conn (:conn db)
-          column-old (get-card-column @conn card-id)]
+          column-old (-> (d/entity @conn card-id) :column first :db/id)]
       (d/transact! conn [[:db/retract card-id :column column-old]
                          [:db/add card-id :column column-id]])
       (assoc db :db @conn))))
@@ -73,10 +70,14 @@
 
 (reg-event-db
   :move-card-x
-  (fn [{items :cards :as db} [_ column-id drag-index hover-index]]
-     (let [drag-card (assoc (get items drag-index) :column-id column-id)
-           items-removed
-             (vec (concat (subvec items 0 drag-index) (subvec items (inc drag-index))))
-           items-added
-             (vec (concat (subvec items-removed 0 hover-index) [drag-card] (subvec items-removed hover-index)))]
-       (assoc db :cards items-added))))
+  (fn [{items :cards :as db} [_ column-id drag-id hover-id direction]]
+    (let [conn (:conn db)
+          column-old (-> (d/entity @conn drag-id) :column first :db/id)
+          hover-order (:order (d/entity @conn hover-id))
+          other-order (if (= :above direction) (get-prev-card-order @conn hover-id drag-id) (get-next-card-order @conn hover-id drag-id))
+          order (if (nil? other-order)
+                  (+ hover-order (if (= :above direction) -100 100))
+                  (/ (+ hover-order other-order) 2))]
+      (d/transact! conn [[:db/retract drag-id :column column-old]
+                         {:db/id drag-id :column column-id :order order}])
+      (assoc db :db @conn))))
