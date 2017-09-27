@@ -10,3 +10,5 @@ tmp
 .lein-repl-history
 .lein-failures
 .nrepl-port
+.idea
+kanban.iml
